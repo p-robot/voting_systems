@@ -1,5 +1,11 @@
+#!/usr/bin/env python3
 """
-Plot the distribution of A) outbreak duration and B) total cattle culled for each model
+Plot the distribution of A) outbreak duration and B) total cattle culled for each model for the
+data from the "objectives matter" paper.  This is just a sanity check of the data.  
+
+This assumes there is data called 'model_a.csv' ... 'model_e.csv' in the 'data' folder (pull this from the github.com/p-robot/objectives_matter.git repo if not) and it also assumes there is a folder called 'graphics' in which figures can be saved.  
+
+W. Probert, 2019
 """
 
 from matplotlib import pyplot as plt

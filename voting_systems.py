@@ -1,12 +1,19 @@
+#!/usr/bin/env python3
 """
+Definition of vote-processing rules, and analysis of FMD data using these rules (see bottom of script).  
+
+
+W. Probert, 2019
+
+--- To do ---
 Write out AV method.  
 Write out examples of Coombs' method
 Write out examples of alternative vote method
 What is Hare method?  
 Unit tests with several ties
+Process data from Shouli
 
 Use same "vote processing rule" terminology throughout the document.  
-
 """
 
 import copy
@@ -14,14 +21,14 @@ import pandas as pd
 import numpy as np
 from os.path import join
 
-def fpp(votes, second_objective = None):
+def fpp(votes):
     """
     First pass the post
     
-    Array (or multi-dimensional array) of votes
-    
-    Second objective for dealing with ties
-    
+    Arguments
+    ---------
+    votes: numpy array
+        Array (or multi-dimensional array) of votes
     """
     unique_sorted, reverse = np.unique(votes, return_inverse = True)
     
@@ -32,9 +39,8 @@ def fpp(votes, second_objective = None):
     # Find the best action
     astar = np.argmin(votes)
     
-    # Deal with ties
+    # Deal with ties (?)
     #if( np.sum(votes == np.min) ):
-    #    
     
     return(astar, order)
 
@@ -42,6 +48,25 @@ def fpp(votes, second_objective = None):
 def borda_count(votes):
     """
     Borda count method
+    
+    Arguments
+    ---------
+    votes: numpy array
+        Array (or multi-dimensional array) of votes
+    
+    
+    Returns
+    -------
+    tuple of (winner, points)
+    
+    winner : int
+        index of the winning canidate
+    points : numpy array of int
+        Borda score for each candidate
+    
+    
+    Example
+    -------
     
     
     sum(np.array([borda_count(df.loc[df.run == i, "duration"].values) for i in np.arange(1, 100)]))
@@ -60,6 +85,8 @@ def borda_count(votes):
 
 def coombs(preferences):
     """
+    Coombs method
+    
     Find the proportion of votes for each action.  Remove the most disliked candidate at each 
     time point.  
     
@@ -68,8 +95,20 @@ def coombs(preferences):
     unique_sorted, reverse = np.unique(v, return_inverse = True)
     ordering = reverse + 1
     
-    -1. Resolve ties
-    0. Tally the first round of votes
+    Arguments
+    ---------
+    preferences: numpy array
+        Array (or multi-dimensional array) of votes
+    
+    
+    Returns
+    -------
+    winner : int
+        index of the winning canidate    
+    
+    Example
+    -------
+    
     """
     
     n_voters, n_action = preferences.shape
@@ -184,10 +223,25 @@ def coombs(preferences):
 
 def alternative_vote(preferences):
     """
+    Alternative vote method
+    
     Find the proportion of votes for each action.  Remove the least liked candidate at each round 
     until a majority preference is found.  
     
-    There can be no ties in input votes.  
+    
+    Arguments
+    ---------
+    preferences: numpy array
+        Array (or multi-dimensional array) of votes
+        There can be no ties in input votes.  
+    
+    Returns
+    -------
+    winner : int
+        index of the winning canidate    
+    
+    Example
+    -------
     """
     
     n_voters, n_action = preferences.shape
@@ -302,6 +356,7 @@ def alternative_vote(preferences):
 
 
 if __name__ == "__main__":
+    # If this script is called as a standalone script then the following analysis is run.  
     
     # 'model_b.csv' ignored because it can only do 4 control measures
     datasets = ['model_a.csv', 'model_c.csv', 'model_d.csv', 'model_e.csv']
