@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from distutils.core import setup
 import numpy as np
-
 
 DESCRIPTION = "Voting systems for decision-making with multiple epidemiological model"
 NAME = "voting_systems"
@@ -13,9 +12,7 @@ MAINTAINER_EMAIL = "william.probert@bdi.ox.ac.uk"
 URL = "https://github.com/p-robot/voting_systems"
 DOWNLOAD_URL = "https://github.com/p-robot/voting_systems"
 LICENSE = "Apache License, Version 2.0"
-import voting_systems
-VERSION = voting_systems.__version__
-
+VERSION = 1.0
 
 setup(  
     name = NAME,
@@ -29,12 +26,12 @@ setup(
     download_url = DOWNLOAD_URL,
     license = LICENSE,
     requires=['numpy','pandas'],
-    packages=["voting_systems", "voting_systems.tests", "voting_systems.data"],
-    package_data={"voting_systems": ["data/ebola_models.csv",]},
+    packages=["voting_systems", "voting_systems.tests"], # , "voting_systems.data"
+    #package_data={"voting_systems": ["data/ebola_models.csv",]},
     classifiers = ['Development Status :: 3 - Alpha',
                    'Programming Language :: Python',
                    'Programming Language :: Python :: 3',
-                   'Programming Language :: Python :: 3.3',
+                   'Programming Language :: Python :: 3.7',
                    'License :: OSI Approved :: Apache Software License',
                    'Intended Audience :: Science/Research',
                    'Topic :: Scientific/Engineering',
