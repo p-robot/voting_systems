@@ -26,7 +26,7 @@ setup(
     download_url = DOWNLOAD_URL,
     license = LICENSE,
     requires=['numpy','pandas'],
-    packages=["voting_systems", "voting_systems.tests"], # , "voting_systems.data"
+    packages=["voting_systems"], # , "voting_systems.data"
     #package_data={"voting_systems": ["data/ebola_models.csv",]},
     classifiers = ['Development Status :: 3 - Alpha',
                    'Programming Language :: Python',
