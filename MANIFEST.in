@@ -1,0 +1,4 @@
+include setup.py
+include voting_systems/__init__.py
+include voting_systems/core.py
+include voting_systems/tests/*.py
