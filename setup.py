@@ -11,7 +11,7 @@ MAINTAINER_EMAIL = "william.probert@bdi.ox.ac.uk"
 URL = "https://github.com/p-robot/voting_systems"
 DOWNLOAD_URL = "https://github.com/p-robot/voting_systems"
 LICENSE = "Apache License, Version 2.0"
-VERSION = 1.0
+VERSION = "1.0"
 
 setup(  
     name = NAME,
