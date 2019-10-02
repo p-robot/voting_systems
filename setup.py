@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from distutils.core import setup
-import numpy as np
 
 DESCRIPTION = "Voting systems for decision-making with multiple epidemiological model"
 NAME = "voting_systems"
@@ -25,17 +24,6 @@ setup(
     url = URL,
     download_url = DOWNLOAD_URL,
     license = LICENSE,
-    requires=['numpy','pandas'],
-    packages=["voting_systems"], # , "voting_systems.data"
-    #package_data={"voting_systems": ["data/ebola_models.csv",]},
-    classifiers = ['Development Status :: 3 - Alpha',
-                   'Programming Language :: Python',
-                   'Programming Language :: Python :: 3',
-                   'Programming Language :: Python :: 3.7',
-                   'License :: OSI Approved :: Apache Software License',
-                   'Intended Audience :: Science/Research',
-                   'Topic :: Scientific/Engineering',
-                   'Topic :: Scientific/Engineering :: Mathematics',
-                   'Operating System :: OS Independent'],
-    include_dirs = [np.get_include()]
-    )
+    packages=["voting_systems"]) # , "voting_systems.data"
+
+#package_data={"voting_systems": ["data/ebola_models.csv",]},
