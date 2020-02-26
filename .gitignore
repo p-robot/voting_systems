@@ -1,7 +1,15 @@
-__pycache__
+# Mac files
 .DS_Store
+
+# Python files
+__pycache__
 *.egg-info
+MANIFEST
 dist
 build
-doc
-MANIFEST
+venv
+
+# Project files
+docs
+graphics
+
