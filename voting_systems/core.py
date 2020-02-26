@@ -1,42 +1,57 @@
 #!/usr/bin/env python3
 """
-Definition of vote-processing rules, and analysis of FMD data using these rules (see bottom of script).  
+Definition of vote-processing rules for comparing output from multiple models
 
 
 W. Probert, 2019
 
 --- To do ---
+Write out examples for testing Borda count (including weird situation where candidate with most 1st preferences doesn't win).  
+
 Write out examples of Coombs' method
-Write out AV method.  
-Write out examples of alternative vote method
-Unit tests with several ties
+Write out examples for testing AV method.  
+
+Write out the pseudo-code for the AV method, Borda count, Coombs method.  
+
 Process data from Shouli
+
 Votes are input in the same format, and each function outputting the winner with the same format
 Deal with string inputs
+
+We assume that all candidates have a vote ... there's no partial ballots (so unique(votes) has all candidates).  
 
 Use same "vote processing rule" terminology throughout the document.  
 """
 
-import copy
-import pandas as pd
-import numpy as np
-from os.path import join
+import copy, numpy as np
 
 
 def fpp(votes):
     """
-    First pass the post
+    First past the post voting rule
     
     Arguments
     ---------
     votes: numpy array
-        Array (or multi-dimensional array) of votes, rows are voters, columns are preference
+        Array (or multi-dimensional array) of votes, rows are voters, columns are preference.  
         For instance [["H", "D", "A"], ["A", "D", "H"]] represents two votes, the first voter voted
         candidate H first, then candidate D, then candidate A, the second voter voted candidate A
         first, then candidate D, then candidate H.  
-    
+        
     Returns
     -------
+    (candidates, tally, (winner, winner_index))
+
+    candidates : list
+        list of all possible candidates, in the order returned using np.unique(votes[0]).  There are
+        no partial ballots so each vote in 'votes' should contain all candidates.      
+    tally: list
+        list of votes for each candidate, in the same order as 'candidates'.  
+    winner: 
+        winner the winning candidate under FPP.  This is the same type as the input elements of
+        'votes'.  In the case of ties a list is returned with the tied winners.  
+    winner_index : int
+        index of 'candidates' of the winning candidate.  In the case of ties
     
     """
     
@@ -53,21 +68,27 @@ def fpp(votes):
         else: 
             raise Exception("Input needs to be list or numpy array. Exiting.")
     
-    # Find unique 1st preference votes
-    unique_sorted, reverse = np.unique(votes[:,0], return_inverse = True)
-    tally = np.bincount(reverse)
+    # List all candidates (there are no partial ballots so each vote contains all candidates)
+    candidates = np.unique(votes[0])
+    
+    # Find unique 1st preference votes from list of all candidates
+    tally = [np.sum(votes[:,0] == c) for c in candidates]
+    
+    # If counts for all candidates don't need to be returned, then can use this:
+    #unique_sorted, tally = np.unique(votes[:,0], return_inverse = True)
+    #tally = np.bincount(reverse)
     
     # Check for ties
-    maximums = np.where(tally == np.max(tally))[0]
+    winner_index = np.where(tally == np.max(tally))[0]
     
-    # Find the best action
-    if len(maximums) == 1:
-        astar_idx = np.argmax(tally)
-        winner = unique_sorted[astar_idx]
+    # Find the best action(s)
+    if len(winner_index) == 1:
+        winner_index = np.argmax(tally)
+        winner = candidates[winner_index]
     else:
-        winner = unique_sorted[maximums]
+        winner = candidates[winner_index]
     
-    return(winner, tally)
+    return(candidates, tally, (winner, winner_index))
 
 
 def borda_count(votes):
@@ -76,8 +97,11 @@ def borda_count(votes):
     
     Arguments
     ---------
-    votes: numpy array or list
-        Array (or multi-dimensional array or list) of votes.  
+    votes: numpy array
+        Array (or multi-dimensional array) of votes, rows are voters, columns are preference.  
+        For instance [["H", "D", "A"], ["A", "D", "H"]] represents two votes, the first voter voted
+        candidate H first, then candidate D, then candidate A, the second voter voted candidate A
+        first, then candidate D, then candidate H.  
     
     
     Returns
@@ -97,25 +121,53 @@ def borda_count(votes):
     sum(np.array([borda_count(df.loc[df.run == i, "duration"].values) for i in np.arange(1, 100)]))
     """
     
+    # Check input has the same number of votes for each voter
+    diff_size_to_first_vote = list(filter(lambda x: len(x) != len(votes[0]), votes))
+    if len(diff_size_to_first_vote) != 0:
+        raise Exception("No partial ballots allowed; some voters do not have a full ballot." +
+            " Exiting.")
+    
+    # Check input is a numpy array or list
+    if not isinstance(votes, np.ndarray):
+        if isinstance(votes, list):
+            votes = np.asarray(votes)
+        else: 
+            raise Exception("Input needs to be list or numpy array. Exiting.")
+    
+    # List all candidates (there are no partial ballots so each vote contains all candidates)
     candidates = np.unique(votes[0])
     
-    v, n = votes.shape
+    Nvotes, Ncandidates = votes.shape
     
-    output = [np.unique(r, return_inverse = True) for r in votes]
-    output = np.array([n - r for u, r in output])
+    # Return rankings of each candidate within each vote (in the order of 'candidates')
+    rankings_per_vote = [sorted(range(Ncandidates), key = lambda k: vote[k]) for vote in votes]
+    rankings_per_vote = np.asarray(rankings_per_vote)
     
-    points = np.sum(output, axis = 0)
-    winner = candidates[np.argmax(points)]
+    # Adjust rankings to points within each vote
+    points_per_vote = np.array([Ncandidates - ranks for ranks in rankings_per_vote])
     
-    return(winner, points)
+    # Sum points across candidates
+    points_per_candidate = np.sum(points_per_vote, axis = 0)
+    
+    # Check for ties
+    winner_index = np.where(points_per_candidate == np.max(points_per_candidate))[0]
+    
+    # Find the best action(s)
+    if len(winner_index) == 1:
+        winner_index = np.argmax(points_per_candidate)
+        winner = candidates[winner_index]
+    else:
+        winner = candidates[winner_index]
+    
+    return(candidates, points_per_candidate, (winner, winner_index))
 
 
 def coombs_method(votes, verbose = False):
     """
     Arguments
     ---------
-    votes: list or numpy array
-        Array (or multi-dimensional array) of votes, rows are voters, columns are preference
+    votes: numpy array
+        Array (or multi-dimensional array) of votes, rows are voters, columns are preference.  
         For instance [["H", "D", "A"], ["A", "D", "H"]] represents two votes, the first voter voted
         candidate H first, then candidate D, then candidate A, the second voter voted candidate A
         first, then candidate D, then candidate H.  
@@ -157,9 +209,9 @@ def coombs_method(votes, verbose = False):
         else: 
             raise Exception("Input needs to be list or numpy array. Exiting.")
     
-    n_voters, n_actions = votes.shape
+    Nvotes, Ncandidates = votes.shape
     
-    # Default value for showing there's no current winner
+    # Default value for showing no winner has yet been determined
     winner = None
 
     # Make a copy of current preferences
@@ -188,7 +240,7 @@ def coombs_method(votes, verbose = False):
             number_votes = np.sum(tally[action_idx])
             
             # Check if majority is reached
-            if number_votes > n_voters*0.5:
+            if number_votes > Ncandidates*0.5:
                 winner = action
                 if verbose: 
                     print(current_votes)
@@ -279,10 +331,10 @@ def alternative_vote(preferences):
     -------
     """
     
-    n_voters, n_action = preferences.shape
+    Nvotes, Ncandidates = preferences.shape
     
     # Calculate the percentage of votes for each preference (row) for each action (col)
-    tally = [np.sum(preferences == i, axis = 0)/n_voters for i in np.arange(1, n_action + 1)]
+    tally = [np.sum(preferences == i, axis = 0)/Nvotes for i in np.arange(1, Ncandidates + 1)]
     tally = np.array(tally)
     
     
@@ -312,8 +364,8 @@ def alternative_vote(preferences):
             r, c = coords
             second_round_preferences[r, c] = 1
         
-        tally = [np.sum(second_round_preferences == i, axis = 0)/n_voters \
-            for i in np.arange(1, n_action + 1)]
+        tally = [np.sum(second_round_preferences == i, axis = 0)/Nvotes \
+            for i in np.arange(1, Ncandidates + 1)]
         proportion_first = tally[0]
         print("Tally :", tally[0])
         if(np.any(proportion_first > 0.5)):
@@ -346,8 +398,8 @@ def alternative_vote(preferences):
                 r, c = coords
                 third_round_preferences[r, c] = 1
             
-            tally = [np.sum(third_round_preferences == i, axis = 0)/n_voters \
-                for i in np.arange(1, n_action + 1)]
+            tally = [np.sum(third_round_preferences == i, axis = 0)/Nvotes \
+                for i in np.arange(1, Ncandidates + 1)]
             proportion_first = tally[0]
             print("Tally :", tally[0])
             if(np.any(proportion_first > 0.5)):
@@ -378,8 +430,8 @@ def alternative_vote(preferences):
                     r, c = coords
                     fourth_round_preferences[r, c] = 1
             
-                tally = [np.sum(fourth_round_preferences == i, axis = 0)/n_voters \
-                    for i in np.arange(1, n_action + 1)]
+                tally = [np.sum(fourth_round_preferences == i, axis = 0)/Nvotes \
+                    for i in np.arange(1, Ncandidates + 1)]
                 proportion_first = tally[0]
                 
                 if(np.any(proportion_first > 0.5)):
