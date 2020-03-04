@@ -2,28 +2,65 @@
 """
 Definition of vote-processing rules for comparing output from multiple models
 
+Votes are input in the same format, and each function outputting the winner with the same format.  
 
 W. Probert, 2019
 
 --- To do ---
-Write out examples for testing Borda count (including weird situation where candidate with most 1st preferences doesn't win).  
 
-Write out examples of Coombs' method
-Write out examples for testing AV method.  
+Translate examples for AV into pytest tests.  
 
-Write out the pseudo-code for the AV method, Borda count, Coombs method.  
 
-Process data from Shouli
+Consolidate examples in powerpoint and pytest and SI.  
 
-Votes are input in the same format, and each function outputting the winner with the same format
-Deal with string inputs
 
-We assume that all candidates have a vote ... there's no partial ballots (so unique(votes) has all candidates).  
+Write out the pseudo-code for FPP, the AV method, Borda count, Coombs method in an SI document.  
 
-Use same "vote processing rule" terminology throughout the document.  
+
+Process data from Shouli.  
+Write analysis script for initial analysis of FMD data.  
+Write analysis script for initial analysis of Ebola data.  
+Write analysis script for sensitivity analyses of FMD/Ebola data.  
+
+
+
+Figure out a method for dealing with ties in AV and Coombs method.  
+Ties all the way to the end of the algorithm - what to do?  
+    FPP : returns all as winners
+    Borda count: returns all as winners
+    Coombs : Not sure ... need to make a check if the set is empty.  
+    Alternative vote : Not sure ... 
+
+
+* We assume that all candidates have a vote ... there's no partial ballots (so unique(votes) has all candidates).  
+* Use same "vote processing rule" terminology throughout the document.  
+* Can Coombs method and alternative vote be implemented recursively?  By making a smaller matrix and recalling the function.  
+
+
 """
 
 import copy, numpy as np
+
+class VoteProcessingRule(object):
+    
+    def algorithm(self):
+        pass
+    
+    def __repr__(self):
+        pass
+
+
+class Election(object):
+    pass
+    
+    
+    # attribute VoteProcessingRule (s)
+    # attribute votes
+    # attribute candidates
+    
+    # attribute winner (s) - use a dict?
+    # attribute winner_index (s) - use a dict?
+
 
 
 def fpp(votes):
@@ -88,7 +125,7 @@ def fpp(votes):
     else:
         winner = candidates[winner_index]
     
-    return(candidates, tally, (winner, winner_index))
+    return((winner, winner_index), (candidates, tally))
 
 
 def borda_count(votes):
@@ -159,11 +196,14 @@ def borda_count(votes):
     else:
         winner = candidates[winner_index]
     
-    return(candidates, points_per_candidate, (winner, winner_index))
+    return((winner, winner_index), (candidates, points_per_candidate))
 
 
 def coombs_method(votes, verbose = False):
     """
+    Coombs method vote-processing rule
+    
+    
     Arguments
     ---------
     votes: numpy array
@@ -176,12 +216,13 @@ def coombs_method(votes, verbose = False):
     verbose : boolean
         Should additional outputs be printed to screen.  
     
-    
     Returns
     -------
     (winner, removed) : 
-        winner : the winner chosen via Coombs method (None if tied).  
-        removed : list of any removed candidates at different rounds of the algorithm.  
+        winner
+            the winner chosen via Coombs method (None if tied).  
+        removed
+            list of any removed candidates at different rounds of the algorithm.  
     
     Example
     -------
@@ -193,7 +234,6 @@ def coombs_method(votes, verbose = False):
         [2, 1, 3, 5, 4]]) - 1
     
     coombs_method(votes)
-    
     """
     
     # Check input has the same number of votes for each voter
@@ -209,13 +249,17 @@ def coombs_method(votes, verbose = False):
         else: 
             raise Exception("Input needs to be list or numpy array. Exiting.")
     
+    
+    # List all candidates (there are no partial ballots so each vote contains all candidates)
+    candidates = np.unique(votes[0])
+    
     Nvotes, Ncandidates = votes.shape
     
     # Default value for showing no winner has yet been determined
     winner = None
 
     # Make a copy of current preferences
-    current_votes = votes
+    current_votes = votes.astype(int)
 
     round_idx = 1
     
@@ -236,16 +280,17 @@ def coombs_method(votes, verbose = False):
         
         # Tally the frequency of each candidate for first preference
         for action in np.unique(first_preferences):
-            action_idx = np.where(first_preferences == action)[0]
+            action_idx = np.where(first_preferences == action)
             number_votes = np.sum(tally[action_idx])
             
             # Check if majority is reached
-            if number_votes > Ncandidates*0.5:
+            if number_votes > Nvotes*0.5:
                 winner = action
+                winner_index = np.where(candidates == winner)[0]
                 if verbose: 
                     print(current_votes)
                     print("Majority found, winner: ", winner)
-                return(winner, removed)
+                return((winner, winner_index), (candidates, removed))
         
         # If there's no winner, remove the action with the largest number of least favourite votes
         # Placeholder to determine if we've found a candidate action to remove
@@ -261,7 +306,7 @@ def coombs_method(votes, verbose = False):
         last_preferences = unique_votes[:, -preference_level]
         last_preference_tally = []
         for action in np.unique(last_preferences):
-            action_idx = np.where(last_preferences == action)[0]
+            action_idx = np.where(last_preferences == action)
             last_preference_tally.append(np.sum(tally[action_idx]))
         
         # Find action with the most number of last 
@@ -308,7 +353,148 @@ def coombs_method(votes, verbose = False):
         round_idx += 1
 
 
-def alternative_vote(preferences):
+
+def alternative_vote(votes, verbose = False):
+    """
+    Alternative vote method
+    
+    Find the proportion of votes for each action.  Remove the least liked candidate at each round 
+    until a majority preference is found.  
+    
+    
+    Arguments
+    ---------
+    votes: numpy array
+        Array (or multi-dimensional array) of votes, rows are voters, columns are preference.  
+        For instance [["H", "D", "A"], ["A", "D", "H"]] represents two votes, the first voter voted
+        candidate H first, then candidate D, then candidate A, the second voter voted candidate A
+        first, then candidate D, then candidate H.
+    
+    Returns
+    -------
+    
+    """
+    
+    # Check input has the same number of votes for each voter
+    diff_size_to_first_vote = list(filter(lambda x: len(x) != len(votes[0]), votes))
+    if len(diff_size_to_first_vote) != 0:
+        raise Exception("No partial ballots allowed; some voters do not have a full ballot." +
+            " Exiting.")
+    
+    # Check input is a numpy array or list
+    if not isinstance(votes, np.ndarray):
+        if isinstance(votes, list):
+            votes = np.asarray(votes)
+        else: 
+            raise Exception("Input needs to be list or numpy array. Exiting.")
+    
+    Nvotes, Ncandidates = votes.shape
+    candidates = np.unique(votes[0])
+    
+    # Default value for showing no winner has yet been determined
+    winner = None
+
+    # Make a copy of current preferences
+    current_votes = votes.astype(int)
+
+    round_idx = 1
+    
+    # List of removed candidates
+    removed = []
+    
+    # Continue removing last preference candidates until we find a winner (i.e. a majority fav)
+    while winner is None:
+        if verbose:
+            print("Round ", round_idx)
+        
+        remaining_candidates = np.unique(current_votes[0])
+        
+        # Find the unique set of votes and tally the frequency of each type of vote
+        unique_votes, idx = np.unique(current_votes, axis = 0, return_inverse = True)
+        tally = np.bincount(idx)
+        
+        # Find number of first preferences for each candidate action
+        first_preferences = unique_votes[:,0]
+        
+        # Tally the frequency of each candidate as a first preference
+        for action in remaining_candidates:
+            action_idx = np.where(first_preferences == action)
+            number_votes = np.sum(tally[action_idx])
+            
+            # Check if majority is reached
+            if number_votes > Nvotes*0.5:
+                winner = action
+                winner_index = np.where(candidates == winner)[0]
+                if verbose: 
+                    print(current_votes)
+                    print("Majority found, winner: ", winner)
+                return((winner, winner_index), (candidates, removed))
+        
+        # If there's no winner, remove the action with the smallest number of first preference votes
+        # Placeholder to determine if we've found a candidate action to remove
+        loser = None
+        
+        # Record the level at which we're comparing votes 
+        # (ie counting backwards from end of array)
+        # (e.g. 1 is last preference votes, 2 is 2nd last preference votes, etc)
+        preference_level = 0
+        
+        # Continue until we've found a candidate action to remove
+        # List the last preference votes
+        first_preferences = unique_votes[:, preference_level]
+        first_preference_tally = []
+        for action in remaining_candidates:
+            action_idx = np.where(first_preferences == action)
+            first_preference_tally.append(np.sum(tally[action_idx]))
+        
+        first_preference_tally = np.asarray(first_preference_tally)
+        
+        # Find action with the least number of first preferences
+        min_first_pref = np.where(first_preference_tally == np.min(first_preference_tally))
+        least_first_pref = remaining_candidates[min_first_pref]
+        
+        if len(least_first_pref) == 1:
+            loser = least_first_pref[0]
+            if verbose: 
+                print(current_votes)
+                print("Removing ", loser)
+                print("---------------")
+            removed.append(loser)
+        else:
+            
+            # If there's ties in the least first preference then choose between these last
+            # candidates using their 2nd votes, 3rd votes, and so on, so as to break ties. 
+            while loser is None:
+                # Look at next preference level to break ties
+                # (for the current 'preference' level, eg 2nd, 3rd, etc)
+                preference_level += 1
+                next_preference_level = unique_votes[:, preference_level]
+                
+                next_least_pref = [np.sum(tally[next_preference_level == least_first]) \
+                    for least_first in least_first_pref]
+                
+                next_last_preference = least_first_pref[next_least_pref == np.min(next_least_pref)]
+                
+                # If we've got a single last-preference on this preference level, then that's 
+                # the candidate to remove, otherwise repeat the process on next preference level
+                if len(next_last_preference) == 1:
+                    loser = next_last_preference[0]
+                    if verbose: 
+                        print(current_votes)
+                        print("Removing ", loser)
+                        print("---------------")
+                    removed.append(loser)
+        
+        # Remove the losing candidate for this round
+        current_votes = np.array([np.array(vote[vote != loser]) for vote in current_votes])
+        print(current_votes)
+        # Increment the round counter
+        round_idx += 1
+
+
+
+
+def alternative_vote_old(preferences):
     """
     Alternative vote method
     
