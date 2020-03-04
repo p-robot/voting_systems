@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from setuptools import setup, find_packages
 from distutils.core import setup
 
 DESCRIPTION = "Voting systems for decision-making with multiple epidemiological model"
@@ -24,6 +25,6 @@ setup(
     url = URL,
     download_url = DOWNLOAD_URL,
     license = LICENSE,
-    packages=["voting_systems"]) # , "voting_systems.data"
+    packages=find_packages()) #["voting_systems"]) # , "voting_systems.data"
 
 #package_data={"voting_systems": ["data/ebola_models.csv",]},
