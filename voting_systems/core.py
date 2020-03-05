@@ -63,7 +63,7 @@ class Election(object):
 
 
 
-def fpp(votes):
+def fpp(votes, verbose = False):
     """
     First past the post voting rule
     
@@ -288,7 +288,6 @@ def coombs_method(votes, verbose = False):
                 winner = action
                 winner_index = np.where(candidates == winner)[0]
                 if verbose: 
-                    print(current_votes)
                     print("Majority found, winner: ", winner)
                 return((winner, winner_index), (candidates, removed))
         
@@ -316,7 +315,6 @@ def coombs_method(votes, verbose = False):
         if len(last_pref) == 1:
             loser = last_pref[0]
             if verbose: 
-                print(current_votes)
                 print("Removing ", loser)
                 print("---------------")
             removed.append(loser)
@@ -340,7 +338,6 @@ def coombs_method(votes, verbose = False):
                 if len(next_last_preference) == 1:
                     loser = next_last_preference[0]
                     if verbose: 
-                        print(current_votes)
                         print("Removing ", loser)
                         print("---------------")
                     removed.append(loser)
@@ -426,7 +423,6 @@ def alternative_vote(votes, verbose = False):
                 winner = action
                 winner_index = np.where(candidates == winner)[0]
                 if verbose: 
-                    print(current_votes)
                     print("Majority found, winner: ", winner)
                 return((winner, winner_index), (candidates, removed))
         
@@ -456,7 +452,6 @@ def alternative_vote(votes, verbose = False):
         if len(least_first_pref) == 1:
             loser = least_first_pref[0]
             if verbose: 
-                print(current_votes)
                 print("Removing ", loser)
                 print("---------------")
             removed.append(loser)
@@ -480,14 +475,12 @@ def alternative_vote(votes, verbose = False):
                 if len(next_last_preference) == 1:
                     loser = next_last_preference[0]
                     if verbose: 
-                        print(current_votes)
                         print("Removing ", loser)
                         print("---------------")
                     removed.append(loser)
         
         # Remove the losing candidate for this round
         current_votes = np.array([np.array(vote[vote != loser]) for vote in current_votes])
-        print(current_votes)
         # Increment the round counter
         round_idx += 1
 
