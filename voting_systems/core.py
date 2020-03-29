@@ -56,7 +56,7 @@ def fpp(votes, verbose = False):
     candidates = np.unique(votes[0])
     
     # Find unique 1st preference votes from list of all candidates
-    tally = [np.sum(votes[:,0] == c) for c in candidates]
+    tally = [np.sum(votes[:, 0] == c) for c in candidates]
     
     # Check for ties
     winner_index = np.where(tally == np.max(tally))[0]
@@ -206,7 +206,6 @@ def coombs_method(votes, verbose = False):
         else: 
             raise Exception("Input needs to be list or numpy array. Exiting.")
     
-    
     # List all candidates (there are no partial ballots so each vote contains all candidates)
     candidates = np.unique(votes[0])
     
@@ -298,8 +297,7 @@ def coombs_method(votes, verbose = False):
                     removed.append(loser)
         
         # Remove the losing candidate for this round
-        current_votes = np.array([list(filter(lambda x: x != loser, vote)) \
-            for vote in current_votes])
+        current_votes = np.array([list(filter(lambda x: x != loser, vote)) for vote in current_votes])
         
         # Increment the round counter
         round_idx += 1
