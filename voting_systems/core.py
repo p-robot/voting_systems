@@ -160,7 +160,6 @@ def coombs_method(votes, verbose = False):
         candidate H first, then candidate D, then candidate A, the second voter voted candidate A
         first, then candidate D, then candidate H.  
     
-    
     verbose : boolean
         Should additional outputs be printed to screen.  
     
@@ -253,12 +252,10 @@ def coombs_method(votes, verbose = False):
         # Placeholder to determine if we've found a candidate action to remove
         loser = None
         
-        # Record the level at which we're comparing votes 
-        # (ie counting backwards from end of array)
+        # Record the level at which we're comparing votes (ie counting backwards from end of array)
         # (e.g. 1 is last preference votes, 2 is 2nd last preference votes, etc)
         preference_level = 1
         
-        # Continue until we've found a candidate action to remove
         # List the last preference votes
         last_preferences = unique_votes[:, -preference_level]
         last_preference_tally = []
@@ -323,7 +320,10 @@ def alternative_vote(votes, verbose = False):
         Array (or multi-dimensional array) of votes, rows are voters, columns are preference.  
         For instance [["H", "D", "A"], ["A", "D", "H"]] represents two votes, the first voter voted
         candidate H first, then candidate D, then candidate A, the second voter voted candidate A
-        first, then candidate D, then candidate H.
+        first, then candidate D, then candidate H.  
+    
+    verbose : boolean
+        Should additional outputs be printed to screen.  
     
     Returns
     -------
