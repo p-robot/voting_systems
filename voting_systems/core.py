@@ -5,62 +5,9 @@ Definition of vote-processing rules for comparing output from multiple models
 Votes are input in the same format, and each function outputting the winner with the same format.  
 
 W. Probert, 2019
-
---- To do ---
-
-Translate examples for AV into pytest tests.  
-
-
-Consolidate examples in powerpoint and pytest and SI.  
-
-
-Write out the pseudo-code for FPP, the AV method, Borda count, Coombs method in an SI document.  
-
-
-Process data from Shouli.  
-Write analysis script for initial analysis of FMD data.  
-Write analysis script for initial analysis of Ebola data.  
-Write analysis script for sensitivity analyses of FMD/Ebola data.  
-
-
-
-Figure out a method for dealing with ties in AV and Coombs method.  
-Ties all the way to the end of the algorithm - what to do?  
-    FPP : returns all as winners
-    Borda count: returns all as winners
-    Coombs : Not sure ... need to make a check if the set is empty.  
-    Alternative vote : Not sure ... 
-
-
-* We assume that all candidates have a vote ... there's no partial ballots (so unique(votes) has all candidates).  
-* Use same "vote processing rule" terminology throughout the document.  
-* Can Coombs method and alternative vote be implemented recursively?  By making a smaller matrix and recalling the function.  
-
-
 """
 
 import copy, numpy as np
-
-class VoteProcessingRule(object):
-    
-    def algorithm(self):
-        pass
-    
-    def __repr__(self):
-        pass
-
-
-class Election(object):
-    pass
-    
-    
-    # attribute VoteProcessingRule (s)
-    # attribute votes
-    # attribute candidates
-    
-    # attribute winner (s) - use a dict?
-    # attribute winner_index (s) - use a dict?
-
 
 
 def fpp(votes, verbose = False):
