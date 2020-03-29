@@ -1,32 +1,16 @@
 #!/usr/bin/env python3
 """
-Script for running analysis of Ebola and FMD data.  
-
-To do
-------
-
-FMD cleaning script: Also output wide dataset of FMD output.  
-FMD cleaning script: Also output dataset of FMD with "control" categories instead of rankings.  
-FMD cleaning script: Add columns to FMD datasets (add model_id and run_id to column names, remove any columns with "_id" in their name).  
-
-
-Data cleaning: Add "objective" to csv datasets (perhaps in filename or in comments at start of file)
-Data cleaning: Add "name" to csv datasets (perhaps in filename)
-Data cleaning: Check FMD and Ebola examples are cleaning the vote data in the same way.  
-
-
-Output: Check that outputted winners are correct.  
-
+Script for running vote processing rules on Ebola and FMD case studies.  
 
 W. Probert, 2020
 """
 
-import numpy as np, pandas as pd
-import voting_systems.core as voting
 from os.path import join
-import os
+import os, sys
+from datetime import datetime
+import numpy as np, pandas as pd
 
-DATA_DIR = "voting_systems/data"
+import voting_systems.core as voting
 
 vote_processing_rules = [\
     voting.fpp, \
@@ -34,15 +18,33 @@ vote_processing_rules = [\
     voting.coombs_method, \
     voting.alternative_vote]
 
-dataset_files = ["ebola_data_votes_cases.csv", \
+dataset_files = [\
+    "ebola_data_votes_cases.csv", \
     "fmd_data_votes_cattle_culled.csv", \
     "fmd_data_votes_livestock_culled.csv", \
     "fmd_data_votes_duration.csv"]
 
 if __name__ == "__main__":
     
+    # Parse command-line arguments
+    if len(sys.argv) > 1:
+        DATA_DIR = sys.argv[1]
+    else:
+        DATA_DIR = "data"
+
+    if len(sys.argv) > 2:
+        OUTPUT_DIR = sys.argv[2]
+    else: 
+        OUTPUT_DIR = "."
+    
+    # Pull today's date (for saving in output files)
+    now = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+    
     # List for storing results
     results = []
+    
+    print(DATA_DIR)
+    print(OUTPUT_DIR)
     
     # Loop through datasets
     for filename in dataset_files:
@@ -55,7 +57,7 @@ if __name__ == "__main__":
         else:
             idx = 2
         
-        votes = df_votes.to_numpy()[:, idx:]
+        votes = df_votes.to_numpy()[:, idx:].astype(int)
         
         for rule in vote_processing_rules:
             
@@ -63,16 +65,11 @@ if __name__ == "__main__":
             (winner, winner_index), (candidates, output) = rule(votes)
             
             # Save outputs in an array
-            results.append([filename, rule.__name__, winner])
+            results.append([filename, rule.__name__, winner, now])
         
     # Coerce array to dataframe
     df_results = pd.DataFrame(results)
-    df_results.columns = ["dataset", "vote_processing_rule", "winner"]
+    df_results.columns = ["dataset", "vote_processing_rule", "winner", "time"]
     
     # Output dataframe to output folder
-    df_results.to_csv(join("results", "results_analysis1.csv"), index = False)
-    
-    #"analysis1.csv"
-    # today's date
-    # log file
-
+    df_results.to_csv(join(OUTPUT_DIR, "results_analysis1.csv"), index = False)
