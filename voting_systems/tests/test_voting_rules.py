@@ -127,91 +127,100 @@ example1a_char_3times = np.array([
 
 class TestClass(object):
     """
-    Set up test class for checking
+    Class for testing vote processing rules give answers as expected.  
     """
     
     #######
     # FPP #
     #######
     
+    
     def test_fpp_ties(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp(example1)
+        ((winner, winner_index), (candidates, tally)) = voting.fpp(example1)
         np.testing.assert_array_equal(winner, [1, 3])
     
+    
     def test_fpp_ties_winner_index(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp(example1)
+        ((winner, winner_index), (candidates, tally)) = voting.fpp(example1)
         np.testing.assert_array_equal(winner_index, [0, 2])
     
+    
     def test_fpp_ties_candidates(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp(example1)
+        ((winner, winner_index), (candidates, tally)) = voting.fpp(example1)
         np.testing.assert_array_equal(candidates, [1, 2, 3, 4, 5])
     
+    
     def test_fpp_ties_tally(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp(example1)
+        ((winner, winner_index), (candidates, tally)) = voting.fpp(example1)
         np.testing.assert_array_equal(tally, [2, 1, 2, 0, 0])
     
+    
     def test_fpp_char_ties(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp(example1_char)
+        ((winner, winner_index), (candidates, tally)) = voting.fpp(example1_char)
         np.testing.assert_array_equal(winner, ["A", "C"])
     
+    
     def test_fpp_planets_ties(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp(example1_planets)
+        ((winner, winner_index), (candidates, tally)) = voting.fpp(example1_planets)
         np.testing.assert_array_equal(winner, ["Earth", "Mercury"])
     
+    
     def test_fpp_char(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp(example2_char)
+        ((winner, winner_index), (candidates, tally)) = voting.fpp(example2_char)
         np.testing.assert_equal(winner, "D")
     
+    
     def test_fpp_example_deadlock_winner(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp(example_deadlock)
+        ((winner, winner_index), (candidates, tally)) = voting.fpp(example_deadlock)
         np.testing.assert_equal(winner, [0, 1, 2])
 
+
     def test_fpp_example_deadlock_winner(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp(example_deadlock)
+        ((winner, winner_index), (candidates, tally)) = voting.fpp(example_deadlock)
         np.testing.assert_equal(tally, [2, 2, 2])
 
     
     def test_fpp_example_trivial_ties_winner(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp([[10, 9], [9, 10]])
+        ((winner, winner_index), (candidates, tally)) = voting.fpp([[10, 9], [9, 10]])
         np.testing.assert_equal(winner, [9, 10])
 
+
     def test_fpp_example_trivial_ties_tally(self):
-        (candidates, tally, (winner, winner_index)) = voting.fpp([[10, 9], [9, 10]])
+        ((winner, winner_index), (candidates, tally)) = voting.fpp([[10, 9], [9, 10]])
         np.testing.assert_equal(tally, [1, 1])
+        
         
     ###############
     # Borda count #
     ###############
     
     def test_borda_count_ex1_winner(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1)
-        
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1)
         np.testing.assert_array_equal(winner, [1, 3])
     
     
     def test_borda_count_ex1_points(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1)
-        
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1)
         np.testing.assert_array_equal(points, [20, 15, 20,  9, 11])
         
-    def test_borda_count_ex1_char_winner(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1_char)
         
+    def test_borda_count_ex1_char_winner(self):
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1_char)
         np.testing.assert_array_equal(winner, ["A", "C"])
     
+    
     def test_borda_count_ex1_char_winner_index(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1_char)
-        
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1_char)
         np.testing.assert_array_equal(winner_index, [0, 2])
     
     
     def test_borda_count_ex1_char_planets_winner(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1_planets)
-        
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1_planets)
         np.testing.assert_array_equal(winner, ["Earth", "Mercury"])
     
+    
     def test_borda_count_ex1_char_planets_winner_index(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1_planets)
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1_planets)
         
         # Ordering of candidates has changed to example1_char, so in alphabetical order
         # of first 5 planets, Earth and Mercury are 1st and 4th (so 0 and 3 from Python indexing)
@@ -219,74 +228,86 @@ class TestClass(object):
     
     
     def test_borda_count_example1a_char_winner(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1a_char)
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1a_char)
         np.testing.assert_equal(winner, "A")
     
+    
     def test_borda_count_example1a_char_points(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1a_char)
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1a_char)
         np.testing.assert_array_equal(points, [29, 21, 27, 12, 16])
     
+    
     def test_borda_count_example1a_candidates(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1a_char)
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1a_char)
         np.testing.assert_equal(candidates, ["A", "B", "C", "D", "E"])
     
+    
     def test_borda_count_example1a_winner_index(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example1a_char)
+        (winner, winner_index), (candidates, points) = voting.borda_count(example1a_char)
         np.testing.assert_array_equal(winner_index, 0)
 
 
     def test_borda_count_example3_winner(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example3_char)
+        (winner, winner_index), (candidates, points) = voting.borda_count(example3_char)
         np.testing.assert_array_equal(winner, "B")
 
+
     def test_borda_count_example3_winner_index(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example3_char)
+        (winner, winner_index), (candidates, points) = voting.borda_count(example3_char)
         np.testing.assert_array_equal(winner_index, 1)
 
 
     def test_borda_count_example_deadlock_winner(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example_deadlock)
+        (winner, winner_index), (candidates, points) = voting.borda_count(example_deadlock)
         np.testing.assert_array_equal(winner, [0, 1, 2])
 
+
     def test_borda_count_example_deadlock_points(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count(example_deadlock)
+        (winner, winner_index), (candidates, points) = voting.borda_count(example_deadlock)
         np.testing.assert_array_equal(points, [12, 12, 12])
 
 
     def test_borda_count_example_trivial_winner(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count([[10, 9], [9, 10]])
+        (winner, winner_index), (candidates, points) = voting.borda_count([[10, 9], [9, 10]])
         np.testing.assert_array_equal(winner, [9, 10])
 
+
     def test_borda_count_example_deadlock_points(self):
-        (candidates, points, (winner, winner_index)) = voting.borda_count([[10, 9], [9, 10]])
+        (winner, winner_index), (candidates, points) = voting.borda_count([[10, 9], [9, 10]])
         np.testing.assert_array_equal(points, [3, 3])
+
 
     #################
     # Coombs method #
     #################
     
     def test_coombs_ex3_char_winner(self):
-        winner, removed = voting.coombs_method(example3_char)
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example3_char)
         np.testing.assert_equal(winner, "C")
     
+    
     def test_coombs_ties(self):
-        winner, votes = voting.coombs_method([[1, 2], [1, 2]])
+        (winner, winner_index), (candidates, removed) = voting.coombs_method([[1, 2], [1, 2]])
         np.testing.assert_equal(winner, 1) # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Use real example
         
+        
     def test_coombs_ex1(self):
-        winner, removed_actions = voting.coombs_method(example1)
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example1)
         np.testing.assert_equal(winner, 1)
     
+    
     def test_coombs_ex1_1(self):
-        winner, removed_actions = voting.coombs_method(example1 - 1)
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example1 - 1)
         np.testing.assert_equal(winner, 0)
     
+    
     def test_coombs_character(self):
-        winner, removed_actions = voting.coombs_method(example1_char)
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example1_char)
         np.testing.assert_equal(winner, "A")
     
+    
     def test_coombs_ex1_planets(self):
-        winner, removed_actions = voting.coombs_method(example1_planets)
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example1_planets)
         np.testing.assert_equal(winner, "Mercury")
     
     # def test_coombs_method_ties(self):
@@ -295,21 +316,23 @@ class TestClass(object):
     
     
     def test_coombs_method_ex5_winner(self):
-        winner, removed_actions = voting.coombs_method(example5_char)
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example5_char)
         np.testing.assert_equal(winner, "B")
     
+    
     def test_coombs_method_ex5_removed_actions(self):
-        winner, removed_actions = voting.coombs_method(example5_char)
-        np.testing.assert_array_equal(removed_actions, ["D", "E", "C"])
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example5_char)
+        np.testing.assert_array_equal(removed, ["D", "E", "C"])
     
     
     def test_coombs_method_example1a_char_3times_winner(self):
-        winner, removed_actions = voting.coombs_method(example1a_char_3times)
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example1a_char_3times)
         np.testing.assert_equal(winner, "C")
     
+    
     def test_coombs_method_example1a_char_3times_removed_actions(self):
-        winner, removed_actions = voting.coombs_method(example1a_char_3times)
-        np.testing.assert_array_equal(removed_actions, ["D", "E", "A"])
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example1a_char_3times)
+        np.testing.assert_array_equal(removed, ["D", "E", "A"])
     
     
     ####################
@@ -317,28 +340,33 @@ class TestClass(object):
     ####################
     
     def test_alternative_vote_example1_char_winner(self):
-        winner, removed_actions = voting.alternative_vote(example1_char)
+        (winner, winner_index), (candidates, removed) = voting.alternative_vote(example1_char)
         np.testing.assert_equal(winner, "A")
 
+
     def test_alternative_vote_example1_char_removed_actions(self):
-        winner, removed_actions = voting.alternative_vote(example1_char)
-        np.testing.assert_array_equal(removed_actions, ["E", "D", "B"])
+        (winner, winner_index), (candidates, removed) = voting.alternative_vote(example1_char)
+        np.testing.assert_array_equal(removed, ["E", "D", "B"])
     
     
     def test_alternative_vote_example1a_char_winner(self):
-        winner, removed_actions = voting.alternative_vote(example1a_char)
+        (winner, winner_index), (candidates, removed) = voting.alternative_vote(example1a_char)
         np.testing.assert_equal(winner, "A")
 
+
     def test_alternative_vote_example1a_char_removed_actions(self):
-        winner, removed_actions = voting.alternative_vote(example1a_char)
-        np.testing.assert_array_equal(removed_actions, ["E", "D", "B"])
+        (winner, winner_index), (candidates, removed) = voting.alternative_vote(example1a_char)
+        np.testing.assert_array_equal(removed, ["E", "D", "B"])
     
     
     def test_alternative_vote_example1a_char_3times_winner(self):
-        winner, removed_actions = voting.alternative_vote(example1a_char_3times)
+        (winner, winner_index), (candidates, removed) = \
+            voting.alternative_vote(example1a_char_3times)
         np.testing.assert_equal(winner, "C")
 
+
     def test_alternative_vote_example1_char_removed_actions(self):
-        winner, removed_actions = voting.alternative_vote(example1a_char_3times)
-        np.testing.assert_array_equal(removed_actions, ["E", "D", "A"])
+        (winner, winner_index), (candidates, removed) = \
+            voting.alternative_vote(example1a_char_3times)
+        np.testing.assert_array_equal(removed, ["E", "D", "A"])
 
