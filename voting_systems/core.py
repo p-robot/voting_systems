@@ -24,18 +24,18 @@ def fpp(votes, verbose = False):
         
     Returns
     -------
-    (candidates, tally, (winner, winner_index))
+    (winner, winner_index), (candidates, tally)
 
+    winner: 
+        winner the winning candidate.  This is the same type as the input elements of
+        'votes'.  In the case of ties a list is returned with the tied winners.  
+    winner_index : int
+        index of 'candidates' of the winning candidate.  In the case of ties
     candidates : list
         list of all possible candidates, in the order returned using np.unique(votes[0]).  There are
         no partial ballots so each vote in 'votes' should contain all candidates.      
     tally: list
         list of votes for each candidate, in the same order as 'candidates'.  
-    winner: 
-        winner the winning candidate under FPP.  This is the same type as the input elements of
-        'votes'.  In the case of ties a list is returned with the tied winners.  
-    winner_index : int
-        index of 'candidates' of the winning candidate.  In the case of ties
     
     """
     
@@ -57,10 +57,6 @@ def fpp(votes, verbose = False):
     
     # Find unique 1st preference votes from list of all candidates
     tally = [np.sum(votes[:,0] == c) for c in candidates]
-    
-    # If counts for all candidates don't need to be returned, then can use this:
-    #unique_sorted, tally = np.unique(votes[:,0], return_inverse = True)
-    #tally = np.bincount(reverse)
     
     # Check for ties
     winner_index = np.where(tally == np.max(tally))[0]
@@ -90,13 +86,18 @@ def borda_count(votes):
     
     Returns
     -------
-    tuple of (winner, points)
+    (winner, winner_index), (candidates, points_per_candidate)
     
-    winner : 
-        the winning canidate (same object as whatever the input was)
-    points : numpy array of int
-        Borda score for each candidate
-    
+    winner: 
+        winner the winning candidate.  This is the same type as the input elements of
+        'votes'.  In the case of ties a list is returned with the tied winners.  
+    winner_index : int
+        index of 'candidates' of the winning candidate.  In the case of ties
+    candidates : list
+        list of all possible candidates, in the order returned using np.unique(votes[0]).  There are
+        no partial ballots so each vote in 'votes' should contain all candidates. 
+    points_per_candidate : numpy array of int
+        Score under the Borda count system for each candidate
     
     Example
     -------
@@ -165,11 +166,21 @@ def coombs_method(votes, verbose = False):
     
     Returns
     -------
-    (winner, removed) : 
-        winner
-            the winner chosen via Coombs method (None if tied).  
-        removed
-            list of any removed candidates at different rounds of the algorithm.  
+    (winner, winner_index), (candidates, removed)
+    
+    winner: 
+        winner the winning candidate.  This is the same type as the input elements of
+        'votes'.  In the case of ties a list is returned with the tied winners.  
+    
+    winner_index : int
+        index of 'candidates' of the winning candidate.  In the case of ties
+    
+    candidates : list
+        list of all possible candidates, in the order returned using np.unique(votes[0]).  There are
+        no partial ballots so each vote in 'votes' should contain all candidates. 
+    
+    removed : list
+        list of removed candidates at different rounds of the algorithm (if any).  
     
     Example
     -------
@@ -206,7 +217,7 @@ def coombs_method(votes, verbose = False):
     winner = None
 
     # Make a copy of current preferences
-    current_votes = votes.astype(int)
+    current_votes = votes
 
     round_idx = 1
     
@@ -316,6 +327,24 @@ def alternative_vote(votes, verbose = False):
     
     Returns
     -------
+    (winner, winner_index), (candidates, removed)
+    
+    winner: 
+        winner the winning candidate.  This is the same type as the input elements of
+        'votes'.  In the case of ties a list is returned with the tied winners.  
+    
+    winner_index : int
+        index of 'candidates' of the winning candidate.  In the case of ties
+    
+    candidates : list
+        list of all possible candidates, in the order returned using np.unique(votes[0]).  There are
+        no partial ballots so each vote in 'votes' should contain all candidates. 
+    
+    removed : list
+        list of removed candidates at different rounds of the algorithm (if any).
+    
+    Example
+    -------
     
     """
     
@@ -339,7 +368,7 @@ def alternative_vote(votes, verbose = False):
     winner = None
 
     # Make a copy of current preferences
-    current_votes = votes.astype(int)
+    current_votes = votes
 
     round_idx = 1
     
