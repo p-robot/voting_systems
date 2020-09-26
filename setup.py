@@ -5,9 +5,9 @@ from distutils.core import setup
 
 DESCRIPTION = "Voting systems for decision-making with multiple epidemiological model"
 NAME = "voting_systems"
-AUTHOR = "Will Probert"
+AUTHOR = "William J M Probert, Sam Nicol"
 AUTHOR_EMAIL = "william.probert@bdi.ox.ac.uk"
-MAINTAINER = "Will Probert"
+MAINTAINER = "William Probert"
 MAINTAINER_EMAIL = "william.probert@bdi.ox.ac.uk"
 URL = "https://github.com/p-robot/voting_systems"
 DOWNLOAD_URL = "https://github.com/p-robot/voting_systems"
