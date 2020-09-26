@@ -9,6 +9,12 @@ W. Probert, 2019
 
 import copy, numpy as np
 
+def values_to_votes(values):
+    """
+    Convert values to vote rankings
+    """
+    pass
+
 
 def fpp(votes, verbose = False):
     """
@@ -71,7 +77,7 @@ def fpp(votes, verbose = False):
     return((winner, winner_index), (candidates, tally))
 
 
-def borda_count(votes):
+def borda_count(votes, verbose = False):
     """
     Borda count method
     
