@@ -52,12 +52,14 @@ if __name__ == "__main__":
         models = df.model.values
     
         colnames = ['model', 'run'] + [f'rank{i}' for i in np.arange(1, len(actions)+1)]
-    
+        
         df_votes = pd.DataFrame(np.append(df_wide[['model', 'run']].values, votes, axis = 1))
         df_votes.columns = colnames
+        df_votes.insert(2, "objective", "minimize " + obj.replace("_", " "))
         df_votes.to_csv(join(OUTPUT_DIR, "fmd_data_votes_" + obj + ".csv"), index = False)
     
         df_votes_str = pd.DataFrame(np.append(df_wide[['model', 'run']].values, 
             votes_str, axis = 1))
         df_votes_str.columns = colnames
+        df_votes_str.insert(2, "objective", "minimize " + obj.replace("_", " "))
         df_votes_str.to_csv(join(OUTPUT_DIR, "fmd_data_votes_str_" + obj + ".csv"), index = False)

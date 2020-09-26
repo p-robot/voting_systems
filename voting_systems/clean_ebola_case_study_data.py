@@ -62,8 +62,8 @@ if __name__ == "__main__":
     colnames = ['model'] + [f'rank{i}' for i in np.arange(1, len(actions)+1)]
     df_votes.columns = colnames
     df_votes.insert(1, "run", 1)
+    df_votes.insert(2, "objective", "minimize cases")
     df_votes.to_csv(join(OUTPUT_DIR, "ebola_data_votes_cases.csv"), index = False)
-
 
     # Generate votes using action labels
     votes_str = [[actions[i] for i in vote] for vote in votes]
@@ -71,4 +71,5 @@ if __name__ == "__main__":
     df_votes_str = pd.DataFrame(np.append(models[:,None], votes_str, axis = 1))
     df_votes_str.columns = colnames
     df_votes_str.insert(1, "run", 1)
+    df_votes_str.insert(2, "objective", "minimize cases")
     df_votes_str.to_csv(join(OUTPUT_DIR, "ebola_data_votes_str_cases.csv"), index = False)
