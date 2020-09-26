@@ -3,6 +3,11 @@
 Testing script for vote-processing rules
 
 
+Votes are recorded in the following manner: 
+Each row is a vote, each column is the preference/rank (note: each column is *not* a candidate).
+The elements in each row give the order of preference.  
+
+
 For each rule, the following has been tested:
 
 * Test the rule winner is correct
@@ -19,7 +24,7 @@ For each rule, the following has been tested:
 W. Probert, 2019
 """
 import numpy as np, sys
-import voting_systems.core as voting
+import voting_systems as voting
 
 # Example 1: model 1 (the first voter/row) thought action A was the best, 
 # followed by D, then C, E, and thought B was the worst action.  
