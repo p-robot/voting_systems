@@ -2,15 +2,20 @@
 """
 Script for running vote processing rules on Ebola and FMD case studies.  
 
+Usage
+-----
+
+
+
+
 W. Probert, 2020
 """
 
+import numpy as np, pandas as pd, os, sys
 from os.path import join
-import os, sys
 from datetime import datetime
-import numpy as np, pandas as pd
 
-import voting_systems.core as voting
+import voting_systems as voting
 
 vote_processing_rules = [\
     voting.fpp, \
@@ -19,10 +24,10 @@ vote_processing_rules = [\
     voting.alternative_vote]
 
 dataset_files = [\
-    "ebola_data_votes_cases.csv", \
-    "fmd_data_votes_cattle_culled.csv", \
-    "fmd_data_votes_livestock_culled.csv", \
-    "fmd_data_votes_duration.csv"]
+    "ebola_data_votes_str_cases.csv", \
+    "fmd_data_votes_str_cattle_culled.csv", \
+    "fmd_data_votes_str_livestock_culled.csv", \
+    "fmd_data_votes_str_duration.csv"]
 
 if __name__ == "__main__":
     
@@ -43,22 +48,17 @@ if __name__ == "__main__":
     # List for storing results
     results = []
     
-    print(DATA_DIR)
-    print(OUTPUT_DIR)
-    
     # Loop through datasets
     for filename in dataset_files:
         
-        # Load datasets
+        # Load dataset
         df_votes = pd.read_csv(join(DATA_DIR, filename))
         
-        if "ebola" in filename:
-            idx = 1
-        else:
-            idx = 2
+        vote_cols = [c for c in df_votes.columns if "rank" in c]
         
-        votes = df_votes.to_numpy()[:, idx:].astype(int)
+        votes = df_votes[vote_cols].to_numpy().astype(str) # to avoid 'object' type
         
+        # Process 'election' for each vote-processing rule
         for rule in vote_processing_rules:
             
             # Run vote-processing rule
@@ -66,7 +66,7 @@ if __name__ == "__main__":
             
             # Save outputs in an array
             results.append([filename, rule.__name__, winner, now])
-        
+    
     # Coerce array to dataframe
     df_results = pd.DataFrame(results)
     df_results.columns = ["dataset", "vote_processing_rule", "winner", "time"]
