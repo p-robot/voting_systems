@@ -31,6 +31,9 @@ if __name__ == "__main__":
     else: 
         OUTPUT_DIR = "data"
 
+    # Set seed for repeatable results
+    np.random.seed(2020)
+
     # Read in excel sheet.  
     df = pd.read_csv(join(DATA_DIR, "Ebola caseload under five interventions_Shouli.csv"))
 
