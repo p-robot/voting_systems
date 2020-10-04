@@ -16,7 +16,7 @@ W. Probert, 2019
 
 import pandas as pd, numpy as np, re, sys
 from os.path import join
-
+import voting_systems as voting
 
 if __name__ == "__main__":
     
@@ -54,9 +54,13 @@ if __name__ == "__main__":
     # Extract only model names
     models = df.model.values
 
-    # Generate votes for each action from each model
-    votes = [np.argsort(row.values[1:]) for (index, row) in df.iterrows()]
-    votes = np.asarray(votes)
+    values = df[actions].to_numpy()
+    
+    # Generate votes for each action from each model (returning indices)
+    votes = voting.values_to_votes(values)
+    
+    # Generate votes for each action from each model (returning action labels)
+    votes_str = voting.values_to_votes(values, candidate_labels = actions)
 
     df_votes = pd.DataFrame(np.append(models[:, None], votes, axis = 1))
     colnames = ['model'] + [f'rank{i}' for i in np.arange(1, len(actions)+1)]
