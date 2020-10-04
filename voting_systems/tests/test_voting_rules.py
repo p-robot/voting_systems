@@ -24,6 +24,8 @@ For each rule, the following has been tested:
 W. Probert, 2019
 """
 import numpy as np, sys
+from collections import Counter
+
 import voting_systems as voting
 
 # Example 1: model 1 (the first voter/row) thought action A was the best, 
@@ -156,6 +158,126 @@ example1a_char_3times = np.array([
     ["B", "A", "C", "E", "D"],
     ["B", "A", "C", "E", "D"]
 ])
+
+
+
+def test_values_to_votes_1():
+    
+    projections = np.asarray([[6, 5, 4, 3, 2, 1]])
+    
+    votes = voting.values_to_votes(projections)
+    
+    np.testing.assert_array_equal(votes, np.asarray([[5, 4, 3, 2, 1, 0]]))
+
+
+def test_values_to_votes_2():
+    
+    projections = np.asarray([[1.2, 2.5, 3.4, 4.3, 5.2, 6.1]])
+    
+    votes = voting.values_to_votes(projections)
+    
+    np.testing.assert_array_equal(votes, np.asarray([[0, 1, 2, 3, 4, 5]]))
+
+
+def test_values_to_votes_3():
+    
+    projections = np.asarray([[2.5, 1.2, 4.3, 3.4, 6.1, 5.2]])
+    
+    votes = voting.values_to_votes(projections)
+    
+    np.testing.assert_array_equal(votes, np.asarray([[1, 0, 3, 2, 5, 4]]))
+
+
+def test_values_to_votes_3_labels():
+    
+    projections = np.asarray([[2.5, 1.2, 4.3, 3.4, 6.1, 5.2]])
+    
+    votes = voting.values_to_votes(
+        values = projections, 
+        candidate_labels = ["A", "B", "C", "D", "E", "F"])
+    
+    np.testing.assert_array_equal(votes, np.asarray([["B", "A", "D", "C", "F", "E"]]))
+
+
+def test_values_to_votes_multiple_votes():
+    """
+    Example with several values from examples above
+    """
+    
+    projections = np.asarray([
+            [6, 5, 4, 3, 2, 1],
+            [6, 5, 4, 3, 2, 1],
+            [1.2, 2.5, 3.4, 4.3, 5.2, 6.1],
+            [2.5, 1.2, 4.3, 3.4, 6.1, 5.2]
+            ])
+    
+    votes = voting.values_to_votes(projections)
+    
+    np.testing.assert_array_equal(votes, 
+        np.asarray([
+            [5, 4, 3, 2, 1, 0],
+            [5, 4, 3, 2, 1, 0],
+            [0, 1, 2, 3, 4, 5],
+            [1, 0, 3, 2, 5, 4]
+        ]))
+
+
+def test_values_to_votes_4():
+    
+    projections = np.asarray([[1, 1, 1, 1, 1, 1]])
+    secondary_objective = [np.asarray([[2.5, 1.2, 4.3, 3.4, 6.1, 5.2]])] # same as #3 aboves
+    
+    votes = voting.values_to_votes(projections, secondary_value = secondary_objective)
+    
+    np.testing.assert_array_equal(votes, np.asarray([[1, 0, 3, 2, 5, 4]]))
+
+
+def test_values_to_votes_4_labels():
+    
+    projections = np.asarray([[1, 1, 1, 1, 1, 1]])
+    secondary_objective = [np.asarray([[2.5, 1.2, 4.3, 3.4, 6.1, 5.2]])] # same as #3 aboves
+    
+    votes = voting.values_to_votes(projections, 
+        candidate_labels = ["A", "B", "C", "D", "E", "F"],
+        secondary_value = secondary_objective)
+    
+    np.testing.assert_array_equal(votes, np.asarray([["B", "A", "D", "C", "F", "E"]]))
+
+
+def test_values_to_votes_5():
+    
+    projections = np.asarray([[1, 2, 2, 2, 1, 1]])
+    secondary_objective = [np.asarray([[2.5, 1.2, 4.3, 3.4, 6.1, 5.2]])] # same as #3 aboves
+    
+    votes = voting.values_to_votes(projections, secondary_value = secondary_objective)
+    
+    np.testing.assert_array_equal(votes, np.asarray([[0, 5, 4, 1, 3, 2]]))
+
+
+def test_values_to_votes_random():
+    """
+    Check splitting ties using a random approach provides a random
+    In 10000 votes on 6 candidates, the ties should give the same proportion of 
+    preferences to each candidate if ties are split randomly.  
+    """
+    Nvotes = 100000
+    Nactions = 4
+    
+    projections = np.ones((Nvotes, Nactions))
+    
+    votes = voting.values_to_votes(projections)
+    
+    # Tally the number of times each candidate was placed in a particular preference
+    preference_counts = [Counter(x) for x in votes.T]
+    
+    # Take proportions
+    preference_props = np.array([list(p.values()) for p in preference_counts])/Nvotes
+    
+    # Proportions should be evenly distributed (check it's the same to 2 dp)
+    np.testing.assert_array_almost_equal(
+        preference_props, 
+        np.ones((Nactions, Nactions))*(1./Nactions), 
+        decimal = 2)
 
 
 class TestClass(object):
@@ -438,5 +560,3 @@ class TestClass(object):
         (winner, winner_index), (candidates, removed) = \
             voting.alternative_vote(example1a_char_3times)
         np.testing.assert_array_equal(removed, ["E", "D", "A"])
-
-
