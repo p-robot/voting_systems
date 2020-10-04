@@ -11,6 +11,7 @@ W. Probert, 2020
 
 import pandas as pd, numpy as np, re, sys
 from os.path import join
+import voting_systems as voting
 
 if __name__ == "__main__":
     
@@ -25,6 +26,9 @@ if __name__ == "__main__":
     else: 
         OUTPUT_DIR = "data"
     
+    # Set seed for repeatable results
+    np.random.seed(2019)
+    
     # Read in CSV files
     models = ["a", "b", "c", "d", "e"]
     datasets = [pd.read_csv(join(DATA_DIR, "model_" + m + ".csv")) for m in models]
@@ -33,26 +37,38 @@ if __name__ == "__main__":
     actions = df.control.unique()
     df['livestock_culled'] = df.cattle_culled + df.sheep_culled
 
+    # Primary objective for ranking actions
     objectives = ['duration', 'livestock_culled', 'cattle_culled']
-
-    for obj in objectives:
-        df_wide = df.groupby(['model', 'run', 'control'])[obj].sum().unstack('control').reset_index()
+    
+    # Secondary objective for ranking actions when ties occur in the primary objective
+    secondary_objectives = ['cattle_culled', 'duration', 'duration']
+    
+    for obj, sec_obj in zip(objectives, secondary_objectives):
+        group_vars = ['model', 'run', 'control']
+        df_wide = df.groupby(group_vars)[obj].sum().unstack('control').reset_index()
         df_wide["objective"] = obj
         
         df_wide.to_csv(join(OUTPUT_DIR, "fmd_data_cleaned_" + obj + ".csv"), index = False)
-    
-        # Generate votes for each action from each model
-        votes = [np.argsort(row[actions].values) for (index, row) in df_wide.iterrows()]
-        votes = np.asarray(votes)
-    
-        # Convert candidate indices to candidate names
-        votes_str = np.asarray([actions[v] for v in votes])
-    
+        
+        values = df_wide[actions].to_numpy()
+        
+        # Secondary objective
+        df_sec_obj = df.groupby(group_vars)[sec_obj].sum().unstack('control').reset_index()
+        sec_obj_values = df_sec_obj[actions].to_numpy()
+        
+        # Generate votes for each action from each model (returning indices)
+        votes = voting.values_to_votes(values, secondary_value = [sec_obj_values])
+        
+        # Generate votes for each action from each model (returning action labels)
+        votes_str = voting.values_to_votes(values, 
+            secondary_value = [sec_obj_values], candidate_labels = actions)
+        
         # Extract only model names
         models = df.model.values
-    
+        
         colnames = ['model', 'run'] + [f'rank{i}' for i in np.arange(1, len(actions)+1)]
         
+        # Rearrange columns of data frames and save to file
         df_votes = pd.DataFrame(np.append(df_wide[['model', 'run']].values, votes, axis = 1))
         df_votes.columns = colnames
         df_votes.insert(2, "objective", "minimize " + obj.replace("_", " "))
