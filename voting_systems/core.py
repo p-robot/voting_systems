@@ -7,13 +7,74 @@ Votes are input in the same format, and each function outputting the winner with
 W. Probert, 2019
 """
 
-import copy, numpy as np
+import copy, numpy as np, pandas as pd
 
-def values_to_votes(values):
+def values_to_votes(values, **kwargs):
     """
-    Convert values to vote rankings
+    Convert model output across different actions into rankings of actions
+    
+    Arguments
+    ---------
+    
+    values: 2D np.array
+        Model projections under different actions.  Rows are models (or model replicates), columns
+        are possible actions.  Assumes all models have output for all actions (i.e. no partial
+        ballots/votes are possible).  Ranking is performed in ascending order (see np.argsort).  
+    
+    kwargs: optional
+        secondary_value : list with each element having same shape as 'values'
+        Secondary values upon which to split ties.  Passed in order of preference.  Multiple arrays
+        can be passed.  Sorting is performed in ascending order using np.lexsort.  
+    
+        candidate_labels : list
+        List of candidate labels (if not input then indices of candidates are returned, indices
+        found by calling np.unique() on the 'values' argument).
+    
+    Returns
+    -------
+    
+    votes: np.array (same shape as 'values')
+        Rankings of actions within each row of 'values'.  Rows are models (in same order as 'votes),
+        columns are rank preference.  For instance, votes = np.array([[2, 0, 1], [1, 0, 2]]) would
+        mean there were two votes the first vote had the 3rd candidate action as best, followed by
+        the 1st, followed by the 2nd, the second vote ranked the 2nd candidate first, followed by
+        the 1st, followed by the 3rd.  
     """
-    pass
+    
+    # Check type of argument (pd.DataFrame or np.array)
+    # if isinstance(values, np.ndarray):
+    #     pass
+    #
+    # if isinstance(values, pd.DataFrame):
+    #     pass
+    
+    N_votes, N_candidates = values.shape
+    
+    values_to_sort = [values]
+    
+    if "secondary_value" in kwargs:
+        # Concatentate list 'values_to_sort' with the 'secondary_value' keywork arg
+        values_to_sort += kwargs["secondary_value"]
+    
+    # Generate a random matrix the same shape as `values` on which to split ties
+    tie_breaker = np.random.uniform(0, 1, values.shape)
+    values_to_sort.append(tie_breaker)
+    
+    # Reverse the order of the list (lexsort orders on the right-most entry first)
+    values_to_sort = values_to_sort[::-1]
+    
+    # Apply np.lexsort on list of values
+    votes = []
+    for value in zip(*values_to_sort):
+        votes.append(np.lexsort(value))
+    
+    # If 'candidate_labels' are passed, provide votes using such labels (instead of indices)
+    if "candidate_labels" in kwargs:
+        candidate_labels = kwargs["candidate_labels"]
+        candidate_labels = np.asarray(candidate_labels)
+        votes = [candidate_labels[np.asarray(v)] for v in votes]
+    
+    return np.array(votes)
 
 
 def fpp(votes, verbose = False):
