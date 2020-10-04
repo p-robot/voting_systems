@@ -13,7 +13,7 @@ import os, sys
 from datetime import datetime
 import numpy as np, pandas as pd
 
-import voting_systems.core as voting
+import voting_systems as voting
 
 vote_processing_rules = [\
     voting.fpp, \
@@ -49,11 +49,8 @@ if __name__ == "__main__":
     # List for storing results
     results = []
     
-    print(DATA_DIR)
-    print(OUTPUT_DIR)
-    
     # Loop through datasets
-    for filename in dataset_files:
+    for i, filename in enumerate(dataset_files):
         
         # Load datasets
         df_votes = pd.read_csv(join(DATA_DIR, filename))
@@ -62,19 +59,21 @@ if __name__ == "__main__":
         for N in np.arange(0, N_BIASED_MODELS + 1):
             
             # Have the new biased models vote for a single action
-            for BIASED_CANDIDATE in CANDIDATES:    
+            for BIASED_CANDIDATE in CANDIDATES:
                 
-                idx = 2
-                votes = df_votes.to_numpy()[:, idx:].astype(int)
+                vote_cols = [c for c in df_votes.columns if "rank" in c]
+                votes = df_votes[vote_cols].to_numpy().astype(int)
                 
                 # Add an additional model with all 1st preferences for first action
                 # (randomly allocating other preferences)
                 remaining_candidates = [c for c in CANDIDATES if c != BIASED_CANDIDATE]
                 
                 if N > 0:
-                    new_model_prefs = [[BIASED_CANDIDATE] + list(np.random.permutation(remaining_candidates)) for i in range(Nvotes * N)]
-                    votes = np.vstack((votes, new_model_prefs))
+                    new_model_prefs = [[BIASED_CANDIDATE] + \
+                    list(np.random.permutation(remaining_candidates)) for i in range(Nvotes * N)]
                     
+                    votes = np.vstack((votes, new_model_prefs))
+                
                 # Process the votes for all vote-processing rule
                 for rule in vote_processing_rules:
                     
