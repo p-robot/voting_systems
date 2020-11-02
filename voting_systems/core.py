@@ -296,6 +296,7 @@ def coombs_method(votes, verbose = False):
         
         # Find the unique set of votes and tally the frequency of each type of vote
         unique_votes, idx = np.unique(current_votes, axis = 0, return_inverse = True)
+        
         tally = np.bincount(idx)
         
         # Find number of first preferences for each candidate action
@@ -343,7 +344,7 @@ def coombs_method(votes, verbose = False):
             
             # If there's ties in the last preference then choose between these last candidates
             # using their 2nd to last votes, 3rd to last votes, and so on, so as to break ties. 
-            while loser is None:
+            while (loser is None) and (preference_level < unique_votes.shape[1]):
                 # Look at next preference level to break ties
                 # (for the current 'preference' level, eg last, 2nd last, 3rd last, etc)
                 preference_level += 1
@@ -362,9 +363,18 @@ def coombs_method(votes, verbose = False):
                         print("Removing ", loser)
                         print("---------------")
                     removed.append(loser)
+                    break
+            else: 
+                if verbose: 
+                    print("Ties.  Majority not found.")
+                    print("---------------")
+                winner = np.setdiff1d(candidates, removed)
+                winner_index = np.array([np.where(c == candidates)[0][0] for c in winner])
+                return((winner, winner_index), (candidates, removed))
         
         # Remove the losing candidate for this round
-        current_votes = np.array([list(filter(lambda x: x != loser, vote)) for vote in current_votes])
+        current_votes = np.array([list(filter(lambda x: x != loser, vote)) \
+                                                            for vote in current_votes])
         
         # Increment the round counter
         round_idx += 1

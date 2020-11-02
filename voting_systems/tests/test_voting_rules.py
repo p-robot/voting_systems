@@ -13,13 +13,13 @@ For each rule, the following has been tested:
 * Test the rule winner is correct
 * Test the rule winner_index is correct
 * Test the rule candidate list is correct
-* Test the rule additional output is correct
+* Test the rule 'additional output' is correct
+(additional output is things like Borda counts, removed candidates etc)
 
 * Test the rule works with integer inputs
 * Test the rule works with string inputs
 * Test the rule works with ties in the middle of the algorithm
-* Test the rule works with no winner/ties (output is expected)
-
+* Test the rule works with no winner/ties ('deadlock')
 
 W. Probert, 2019
 """
@@ -135,6 +135,15 @@ example_deadlock = np.array([
     [2, 0, 1], 
     [0, 2, 1], 
     [1, 0, 2]
+])
+
+example_deadlock_partial = np.array([
+    [0, 1, 2, 3], 
+    [2, 1, 0, 3], 
+    [1, 2, 0, 3], 
+    [2, 0, 1, 3], 
+    [0, 2, 1, 3], 
+    [1, 0, 2, 3]
 ])
 
 
@@ -374,11 +383,13 @@ class TestClass(object):
         """Test Borda count additional information (Borda count score)"""
         (winner, winner_index), (candidates, points) = voting.borda_count(example1a_char)
         np.testing.assert_array_equal(points, [29, 21, 27, 12, 16])
-        
     
-        
+    
     def test_borda_count_ties_winner(self):
-        """Test Borda count winner when ties occur"""
+        """
+        Test Borda count winner when ties occur
+        example1_char should give ties in winners with Borda count
+        """
         (winner, winner_index), (candidates, points) = voting.borda_count(example1_char)
         np.testing.assert_array_equal(winner, ["A", "C"])
     
@@ -398,9 +409,12 @@ class TestClass(object):
         np.testing.assert_array_equal(points, [20, 15, 20,  9, 11])
         
     
-    
     def test_borda_count_string_ties_winner(self):
-        """Test Borda count winner when ties occur and input candidates are strings"""
+        """
+        Test Borda count winner when ties occur and input candidates are strings
+        example1_planets should give ties in winners with Borda count
+        (alphabetical ordering of candidates is different to example1_char)
+        """
         (winner, winner_index), (candidates, points) = voting.borda_count(example1_planets)
         np.testing.assert_array_equal(winner, ["Earth", "Mercury"])
     
@@ -410,7 +424,6 @@ class TestClass(object):
         # Ordering of candidates has changed to example1_char, so in alphabetical order
         # of first 5 planets, Earth and Mercury are 1st and 4th (so 0 and 3 from Python indexing)
         np.testing.assert_array_equal(winner_index, [0, 3])
-        
         
         
     def test_borda_count_quirk_winner(self):
@@ -462,26 +475,51 @@ class TestClass(object):
         np.testing.assert_equal(removed, [])
     
     
-    # Fix these ... ties with Coombs method
-    # def test_coombs_ties_winner(self):
-    #     (winner, winner_index), (candidates, removed) = voting.coombs_method(example_deadlock)
-    #     np.testing.assert_equal(winner, [0, 1, 2])
-    #
-    # def test_coombs_ties_winner_index(self):
-    #     (winner, winner_index), (candidates, removed) = voting.coombs_method(example_deadlock)
-    #     np.testing.assert_equal(winner_index, [0, 1, 2])
+    def test_coombs_ties_winner(self):
+        """Test Coombs method winner when deadlock occurs (ties between ALL candidates)"""
+        (winner, winner_index), (candidates, removed) = \
+                voting.coombs_method(example_deadlock, verbose = True)
+        np.testing.assert_equal(winner, [0, 1, 2])
+
+    def test_coombs_ties_winner_index(self):
+        """Test Coombs method winner index when deadlock occurs (ties between ALL candidates)"""
+        (winner, winner_index), (candidates, removed) = \
+                voting.coombs_method(example_deadlock)
+        np.testing.assert_equal(winner_index, [0, 1, 2])
+    
+    
+    def test_coombs_ties_partial_winner(self):
+        """Test Coombs method winner when deadlock occurs part-way through the algorithm
+        (i.e. ties between ALL remaining candidates); candidate 3 should be removed"""
+        (winner, winner_index), (candidates, removed) = \
+                voting.coombs_method(example_deadlock_partial, verbose = True)
+        np.testing.assert_equal(winner, [0, 1, 2])
+    
+    def test_coombs_ties_partial_winner_index(self):
+        (winner, winner_index), (candidates, removed) = \
+                voting.coombs_method(example_deadlock_partial, verbose = True)
+        np.testing.assert_equal(winner, [0, 1, 2])
+    
+    def test_coombs_ties_partial_candidates(self):
+        (winner, winner_index), (candidates, removed) = \
+                voting.coombs_method(example_deadlock_partial, verbose = True)
+        np.testing.assert_equal(candidates, [0, 1, 2, 3])
+    
+    def test_coombs_ties_partial_removed(self):
+        (winner, winner_index), (candidates, removed) = \
+                voting.coombs_method(example_deadlock_partial, verbose = True)
+        np.testing.assert_equal(removed, [3])
     
     
     def test_coombs_string_winner(self):
         """Test Coombs method winner when using string inputs"""
         (winner, winner_index), (candidates, removed) = voting.coombs_method(example1_planets)
-        np.testing.assert_equal(winner, "Mercury")
+        np.testing.assert_array_equal(winner, "Mercury")
     
     def test_coombs_string_winner_index(self):
         """Test Coombs method winner index when using string inputs"""
         (winner, winner_index), (candidates, removed) = voting.coombs_method(example1_planets)
-        np.testing.assert_equal(winner_index, 3)
-    
+        np.testing.assert_array_equal(winner_index, 3)
     
     
     def test_coombs_method_ex5_winner(self):
@@ -503,7 +541,6 @@ class TestClass(object):
         """Test Coombs method removed candidates when ties occur in initial rounds"""
         (winner, winner_index), (candidates, removed) = voting.coombs_method(example5_char)
         np.testing.assert_array_equal(removed, ["D", "E", "C"])
-    
     
     
     def test_coombs_method_example1a_char_3times_winner(self):
