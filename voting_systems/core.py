@@ -218,6 +218,11 @@ def coombs_method(votes, verbose = False):
     """
     Coombs method vote-processing rule
     
+    Coombs Method finds the number of first preferences for each candidate.  If there's a majority
+    in first preferences, that candidate is the winner.  If there's no winner, keep removing 
+    candidates with the largest number of least favourite votes until and absolute majority is 
+    found.
+    
     
     Arguments
     ---------
@@ -344,7 +349,7 @@ def coombs_method(votes, verbose = False):
             
             # If there's ties in the last preference then choose between these last candidates
             # using their 2nd to last votes, 3rd to last votes, and so on, so as to break ties. 
-            while (loser is None) and (preference_level < unique_votes.shape[1]):
+            while (loser is None) and (preference_level < (unique_votes.shape[1]-1)):
                 # Look at next preference level to break ties
                 # (for the current 'preference' level, eg last, 2nd last, 3rd last, etc)
                 preference_level += 1
@@ -510,10 +515,11 @@ def alternative_vote(votes, verbose = False):
             
             # If there's ties in the least first preference then choose between these last
             # candidates using their 2nd votes, 3rd votes, and so on, so as to break ties. 
-            while loser is None:
+            while (loser is None) and (preference_level < (unique_votes.shape[1]-1)):
                 # Look at next preference level to break ties
                 # (for the current 'preference' level, eg 2nd, 3rd, etc)
                 preference_level += 1
+                
                 next_preference_level = unique_votes[:, preference_level]
                 
                 next_least_pref = [np.sum(tally[next_preference_level == least_first]) \
@@ -529,6 +535,14 @@ def alternative_vote(votes, verbose = False):
                         print("Removing ", loser)
                         print("---------------")
                     removed.append(loser)
+                    break
+            else: 
+                if verbose: 
+                    print("Ties.  Majority not found.")
+                    print("---------------")
+                winner = np.setdiff1d(candidates, removed)
+                winner_index = np.array([np.where(c == candidates)[0][0] for c in winner])
+                return((winner, winner_index), (candidates, removed))
         
         # Remove the losing candidate for this round
         current_votes = np.array([np.array(vote[vote != loser]) for vote in current_votes])
