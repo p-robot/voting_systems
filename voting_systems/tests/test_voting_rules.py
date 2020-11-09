@@ -71,6 +71,19 @@ example1a_char = np.array([
     ["B", "A", "C", "E", "D"]
 ])
 
+# Example that gives a different result if we're using 
+# Coombs Method (Earth) or Alternative Vote (Mercury)
+example_planets = np.array([
+    ["Mercury", "Earth",   "Venus"],
+    ["Mercury", "Earth",   "Venus"],
+    ["Mercury", "Venus",   "Earth"],
+    ["Earth",   "Venus",   "Mercury"],
+    ["Earth",   "Venus",   "Mercury"],
+    ["Earth",   "Venus",   "Mercury"],
+    ["Venus",   "Mercury", "Earth"]
+])
+
+
 # Example 2: model 1 (the first voter/row) thought action D was the best, followed by A, then C, E, 
 # and thought B was the worst action.  
 
@@ -511,6 +524,12 @@ class TestClass(object):
         np.testing.assert_equal(removed, [3])
     
     
+    def test_coombs_alternative_vote_comparison(self):
+        """Check example that gives a different result to Alternative Vote"""
+        (winner, winner_index), (candidates, removed) = voting.coombs_method(example_planets)
+        np.testing.assert_equal(winner, "Earth")
+    
+    
     def test_coombs_string_winner(self):
         """Test Coombs method winner when using string inputs"""
         (winner, winner_index), (candidates, removed) = voting.coombs_method(example1_planets)
@@ -577,7 +596,6 @@ class TestClass(object):
         np.testing.assert_array_equal(removed, ["E", "D", "B"])
     
     
-    
     def test_alternative_vote_example1a_char_winner(self):
         (winner, winner_index), (candidates, removed) = voting.alternative_vote(example1a_char)
         np.testing.assert_equal(winner, "A")
@@ -586,6 +604,58 @@ class TestClass(object):
         (winner, winner_index), (candidates, removed) = voting.alternative_vote(example1a_char)
         np.testing.assert_array_equal(removed, ["E", "D", "B"])
     
+    
+    def test_alternative_vote_ties_winner(self):
+        """Test Alternative vote winner when deadlock occurs (ties between ALL candidates)"""
+        (winner, winner_index), (candidates, removed) = \
+                voting.alternative_vote(example_deadlock, verbose = True)
+        np.testing.assert_equal(winner, [0, 1, 2])
+
+    def test_alternative_vote_ties_winner_index(self):
+        """Test Alternative vote winner index when deadlock occurs (ties between ALL candidates)"""
+        (winner, winner_index), (candidates, removed) = \
+                voting.alternative_vote(example_deadlock)
+        np.testing.assert_equal(winner_index, [0, 1, 2])
+    
+    
+    def test_alternative_vote_ties_partial_winner(self):
+        """Test Alternative vote winner when deadlock occurs part-way through the algorithm
+        (i.e. ties between ALL remaining candidates); candidate 3 should be removed"""
+        (winner, winner_index), (candidates, removed) = \
+                voting.alternative_vote(example_deadlock_partial, verbose = True)
+        np.testing.assert_equal(winner, [0, 1, 2])
+    
+    def test_alternative_vote_ties_partial_winner_index(self):
+        (winner, winner_index), (candidates, removed) = \
+                voting.alternative_vote(example_deadlock_partial, verbose = True)
+        np.testing.assert_equal(winner, [0, 1, 2])
+    
+    def test_alternative_vote_ties_partial_candidates(self):
+        (winner, winner_index), (candidates, removed) = \
+                voting.alternative_vote(example_deadlock_partial, verbose = True)
+        np.testing.assert_equal(candidates, [0, 1, 2, 3])
+    
+    def test_alternative_vote_ties_partial_removed(self):
+        (winner, winner_index), (candidates, removed) = \
+                voting.alternative_vote(example_deadlock_partial, verbose = True)
+        np.testing.assert_equal(removed, [3])
+    
+    
+    def test_alternative_vote_coombs_comparison(self):
+        """An example that gives a different results to Coombs Method"""
+        (winner, winner_index), (candidates, removed) = voting.alternative_vote(example_planets)
+        np.testing.assert_array_equal(winner, "Mercury")
+    
+    
+    def test_alternative_vote_string_winner(self):
+        """Test Alternative Vote winner when using string inputs"""
+        (winner, winner_index), (candidates, removed) = voting.alternative_vote(example1_planets)
+        np.testing.assert_array_equal(winner, "Mercury")
+    
+    def test_alternative_vote_string_winner_index(self):
+        """Test Alternative Vote winner index when using string inputs"""
+        (winner, winner_index), (candidates, removed) = voting.alternative_vote(example1_planets)
+        np.testing.assert_array_equal(winner_index, 3)
     
     
     def test_alternative_vote_example1a_char_3times_winner(self):
