@@ -1,0 +1,22 @@
+name: Tests of vote processing rules
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    # Check out current repository
+    - uses: actions/checkout@v4
+    - name: Install required packages
+      with:
+        python-version: '3.8'
+   - name: Install dependencies
+     run: |
+       python -m pip install --upgrade pip
+       pip install -r voting_systems/tests/requirements.txt
+  - name: Run tests
+    run: python -m pytest
+  
