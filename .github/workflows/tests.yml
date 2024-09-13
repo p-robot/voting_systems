@@ -9,12 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Install required packages
-      with:
-        python-version: '3.8'
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r voting_systems/tests/requirements.txt
+    - name: build container
+      run:  docker build --tag test -f voting_systems/tests/Dockerfile .
     - name: Run tests
-      run: python -m pytest
-  
+      run: docker run test
