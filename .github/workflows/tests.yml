@@ -12,7 +12,6 @@ jobs:
     - name: Install required packages
       with:
         python-version: '3.8'
-    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r voting_systems/tests/requirements.txt
