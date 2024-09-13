@@ -1,4 +1,7 @@
 # Vote-processing rules for combining control recommendations from multiple models
+![Tests](https://github.com/p-robot/voting_systems/actions/workflows/tests.yml/badge.svg?branch=master)
+![Python version](https://img.shields.io/badge/python-3.8-blue.svg)
+
 
 Vote-processing rules to accompany the publication entitled [*Vote-processing rules for combining rankings of control interventions from multiple models*](https://royalsocietypublishing.org/doi/10.1098/rsta.2021.0314).  This repo includes code for implementing the vote-processing rules, functions for translating model output into "votes", and several tests for all functions in this repository.  
 
