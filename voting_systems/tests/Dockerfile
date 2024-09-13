@@ -12,4 +12,4 @@ COPY . /voting_systems
 
 WORKDIR /voting_systems
 
-ENTRYPOINT ["/usr/local/bin/pytest", "-s"]
+RUN python3.8 -m pytest
